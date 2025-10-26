@@ -1,0 +1,151 @@
+Practical No.10
+
+Please enter a MongoDB connection string (Default: mongodb://localhost/):
+
+Current Mongosh Log ID: 68fe6c45c9677712becebea3
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.8
+Using MongoDB:          8.2.1
+Using Mongosh:          2.5.8
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2025-10-26T14:42:44.698+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+test> show dbs
+admin   40.00 KiB
+config  36.00 KiB
+demoxx  68.00 KiB
+local   76.00 KiB
+test> use demoxx
+switched to db demoxx
+demoxx>  use fees
+switched to db fees
+fees> db.fees.insertOne({Rollno:101,Name:'vedant',Class:'TE',Amount:135300,pdate:'22-01-2025'})
+{
+  acknowledged: true,
+  insertedId: ObjectId('68fe6c9fc9677712becebea4')
+}
+fees> db.fees.insertOne({Rollno:102,Name:'arpan',Class:'TE',Amount:5240000,pdate:'21-07-2025'})
+{
+  acknowledged: true,
+  insertedId: ObjectId('68fe6cebc9677712becebea5')
+}
+fees> db.fees.insertOne({Rollno:103,Name:'om',Class:'BE',Amount:1120000,pdate:'23-11-2025'})
+{
+  acknowledged: true,
+  insertedId: ObjectId('68fe6d0ac9677712becebea6')
+}
+fees> db.fees.find()
+[
+  {
+    _id: ObjectId('68fe6c9fc9677712becebea4'),
+    Rollno: 101,
+    Name: 'vedant',
+    Class: 'TE',
+    Amount: 135300,
+    pdate: '22-01-2025'
+  },
+  {
+    _id: ObjectId('68fe6cebc9677712becebea5'),
+    Rollno: 102,
+    Name: 'arpan',
+    Class: 'TE',
+    Amount: 5240000,
+    pdate: '21-07-2025'
+  },
+  {
+    _id: ObjectId('68fe6d0ac9677712becebea6'),
+    Rollno: 103,
+    Name: 'om',
+    Class: 'BE',
+    Amount: 1120000,
+    pdate: '23-11-2025'
+  }
+]
+fees> db.fees.aggregate([{$group:{_id:null,totalamount:{$sum:'$Amount'}}}])
+[ { _id: null, totalamount: 6495300 } ]
+fees> db.fees.aggregate([{$group:{_id:'$Class',totalamount:{$sum:'$Amount'}}}])
+[
+  { _id: 'TE', totalamount: 5375300 },
+  { _id: 'BE', totalamount: 1120000 }
+]
+fees> db.fees.aggregate([{$group:{_id:'$Class',totalamount:{$push:'$Amount'}}}])
+[
+  { _id: 'BE', totalamount: [ 1120000 ] },
+  { _id: 'TE', totalamount: [ 135300, 5240000 ] }
+]
+fees> db.fees.insertOne({Rollno:104,Name:'Tanmay',Class:'TE',Amount:45000,pdate:'13-07-2025'})
+{
+  acknowledged: true,
+  insertedId: ObjectId('68fe6d57c9677712becebea7')
+}
+fees> db.fees.aggregate([{$group:{_id:'$Class',totalamount:{$push:'$Amount'}}}])
+[
+  { _id: 'TE', totalamount: [ 135300, 5240000, 45000 ] },
+  { _id: 'BE', totalamount: [ 1120000 ] }
+]
+fees> db.fees.aggregate([{$group:{_id:'$Class',totalamount:{$addToSet:'$Amount'}}}])
+[
+  { _id: 'TE', totalamount: [ 45000, 135300, 5240000 ] },
+  { _id: 'BE', totalamount: [ 1120000 ] }
+]
+fees>  db.fees.aggregate([{$group:{_id:'$Class',totalamount:{$min:'$Amount'}}}])
+[
+  { _id: 'BE', totalamount: 1120000 },
+  { _id: 'TE', totalamount: 45000 }
+]
+fees>  db.fees.aggregate([{$group:{_id:'$Class',totalamount:{$max:'$Amount'}}}])
+[
+  { _id: 'TE', totalamount: 5240000 },
+  { _id: 'BE', totalamount: 1120000 }
+]
+fees> db.fees.aggregate([{$group:{_id:null ,totalamount:{$first:'$Amount'}}}])
+[ { _id: null, totalamount: 135300 } ]
+fees> db.fees.aggregate([{$group:{_id:null ,totalamount:{$last:'$Amount'}}}])
+[ { _id: null, totalamount: 45000 } ]
+fees> db.createIndex({Rollno:100}
+... db.fees.createIndex({Rollno:100} )
+Uncaught:
+SyntaxError: Unexpected token, expected "," (2:0)
+
+  1 | db.createIndex({Rollno:100}
+> 2 | db.fees.createIndex({Rollno:100} )
+    | ^
+  3 |
+
+fees>  db.createIndex({Rollno:100}
+...  db.createIndex({Rollno:100}
+Uncaught:
+SyntaxError: Unexpected token, expected "," (2:1)
+
+  1 |  db.createIndex({Rollno:100}
+> 2 |  db.createIndex({Rollno:100}
+    |  ^
+  3 |
+
+fees> db.fees.createIndex({Rollno:100} )
+Rollno_100
+fees>  db.fees.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { Rollno: 100 }, name: 'Rollno_100' }
+]
+fees> db.fees.createIndex({Rollno:100},{Class:100} )
+Rollno_100
+fees> db.fees.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { Rollno: 100 }, name: 'Rollno_100' }
+]
+fees> db.fees.createIndex({Class:100},{spare:true} )
+Class_100
+fees> db.fees.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { Rollno: 100 }, name: 'Rollno_100' },
+  { v: 2, key: { Class: 100 }, name: 'Class_100' }
+]
+fees>
